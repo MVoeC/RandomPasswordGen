@@ -1,0 +1,40 @@
+# Python
+Thumbs.db
+.DS_Store
+# OS
+
+*~
+*.swo
+*.swp
+.vscode/
+.idea/
+# IDE
+
+.webassets-cache
+instance/
+# Flask
+
+*.egg
+.installed.cfg
+*.egg-info/
+wheels/
+var/
+sdist/
+parts/
+lib64/
+lib/
+.eggs/
+eggs/
+downloads/
+dist/
+develop-eggs/
+build/
+ENV/
+venv/
+env/
+.Python
+*.so
+*$py.class
+*.py[cod]
+__pycache__/
+

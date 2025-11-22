@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机密码生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-copy {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-copy:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-area {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-area.show {
+            display: block;
+        }
+
+        .password-list {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .password-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .password-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .strength-indicator {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .strength-indicator.show {
+            display: block;
+        }
+
+        .strength-weak {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .strength-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .strength-strong {
+            background: #d1fae5;
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 随机密码生成器</h1>
+        <p class="subtitle">安全、可靠、便捷的密码生成工具</p>
+
+        <form id="passwordForm">
+            <div class="form-group">
+                <label for="length">密码长度</label>
+                <input type="number" id="length" name="length" value="16" min="4" max="128" required>
+                <div class="info-text">建议使用12位以上的密码长度</div>
+            </div>
+
+            <div class="form-group">
+                <label for="count">密码数量</label>
+                <input type="number" id="count" name="count" value="1" min="1" max="100" required>
+                <div class="info-text">一次最多生成100个密码</div>
+            </div>
+
+            <div class="form-group">
+                <label>包含字符类型</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="lowercase" name="lowercase" checked>
+                        <label for="lowercase">小写字母 (a-z)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="uppercase" name="uppercase" checked>
+                        <label for="uppercase">大写字母 (A-Z)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="digits" name="digits" checked>
+                        <label for="digits">数字 (0-9)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="special" name="special" checked>
+                        <label for="special">特殊字符 (!@#$...)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="customChars">自定义字符 (可选)</label>
+                <input type="text" id="customChars" name="customChars" placeholder="输入想要添加的自定义字符">
+                <div class="info-text">可以添加任何自定义字符到字符池</div>
+            </div>
+
+            <div class="form-group">
+                <label for="excludeChars">排除字符 (可选)</label>
+                <input type="text" id="excludeChars" name="excludeChars" placeholder="输入想要排除的字符，如：0Oo1Il">
+                <div class="info-text">排除容易混淆的字符，如0O、1lI等</div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn-generate">生成密码</button>
+                <button type="button" class="btn-copy" id="copyBtn" disabled>复制全部</button>
+            </div>
+        </form>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="result-area" id="resultArea">
+            <label>生成的密码</label>
+            <div class="password-list" id="passwordList"></div>
+            <div class="strength-indicator" id="strengthIndicator"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('passwordForm');
+        const resultArea = document.getElementById('resultArea');
+        const passwordList = document.getElementById('passwordList');
+        const errorMessage = document.getElementById('errorMessage');
+        const copyBtn = document.getElementById('copyBtn');
+        const strengthIndicator = document.getElementById('strengthIndicator');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // 隐藏错误消息
+            errorMessage.classList.remove('show');
+            errorMessage.textContent = '';
+
+            // 获取表单数据
+            const formData = {
+                length: parseInt(document.getElementById('length').value),
+                count: parseInt(document.getElementById('count').value),
+                lowercase: document.getElementById('lowercase').checked,
+                uppercase: document.getElementById('uppercase').checked,
+                digits: document.getElementById('digits').checked,
+                special: document.getElementById('special').checked,
+                customChars: document.getElementById('customChars').value,
+                excludeChars: document.getElementById('excludeChars').value
+            };
+
+            // 验证至少选择一种字符类型
+            if (!formData.lowercase && !formData.uppercase && !formData.digits && !formData.special && !formData.customChars) {
+                showError('请至少选择一种字符类型或输入自定义字符');
+                return;
+            }
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayPasswords(data.passwords);
+                    showStrengthIndicator(formData.length);
+                    copyBtn.disabled = false;
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('网络错误，请检查服务器是否正常运行');
+            }
+        });
+
+        copyBtn.addEventListener('click', () => {
+            const passwords = Array.from(document.querySelectorAll('.password-item'))
+                .map(item => item.textContent)
+                .join('\n');
+
+            navigator.clipboard.writeText(passwords).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✓ 已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            }).catch(() => {
+                showError('复制失败，请手动复制');
+            });
+        });
+
+        function displayPasswords(passwords) {
+            passwordList.innerHTML = '';
+            passwords.forEach(password => {
+                const div = document.createElement('div');
+                div.className = 'password-item';
+                div.textContent = password;
+                passwordList.appendChild(div);
+            });
+            resultArea.classList.add('show');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            resultArea.classList.remove('show');
+            copyBtn.disabled = true;
+        }
+
+        function showStrengthIndicator(length) {
+            strengthIndicator.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+
+            let strength = '';
+            let className = '';
+
+            if (length < 8) {
+                strength = '密码强度：弱 - 建议使用更长的密码';
+                className = 'strength-weak';
+            } else if (length < 12) {
+                strength = '密码强度：中等 - 可以使用，建议12位以上';
+                className = 'strength-medium';
+            } else {
+                strength = '密码强度：强 - 很好的密码长度！';
+                className = 'strength-strong';
+            }
+
+            strengthIndicator.textContent = strength;
+            strengthIndicator.className = 'strength-indicator show ' + className;
+        }
+    </script>
+</body>
+</html>
+
